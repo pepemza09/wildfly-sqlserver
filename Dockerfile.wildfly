@@ -4,18 +4,25 @@ FROM jboss/wildfly:latest
 ENV WILDFLY_ADMIN_USER=admin
 ENV WILDFLY_ADMIN_PASSWORD=Admin@123
 
-# Cambiar a usuario root para instalar dependencias
+# Cambiar a usuario root para copiar y dar permisos
 USER root
 
-# Instalar herramientas adicionales si es necesario
-RUN yum update -y && yum clean all
-
-# Volver al usuario jboss
-USER jboss
-
-# Copiar el script de configuración
-COPY setup-wildfly.sh /opt/jboss/
+# Copiar el script de configuración y dar permisos
+COPY setup-wildfly.sh /opt/jboss/setup-wildfly.sh
 RUN chmod +x /opt/jboss/setup-wildfly.sh
+
+# Copiar driver JDBC
+COPY mssql-jdbc-12.10.1.jre11.jar /opt/jboss/wildfly/modules/system/layers/base/com/microsoft/sqlserver/main/
+COPY module.xml /opt/jboss/wildfly/modules/system/layers/base/com/microsoft/sqlserver/main/
+
+# Crear directorios y asignar permisos correctos
+RUN mkdir -p /opt/jboss/wildfly/standalone/log && \
+    mkdir -p /opt/jboss/wildfly/standalone/deployments && \
+    chown -R jboss:jboss /opt/jboss/wildfly/standalone/log && \
+    chown -R jboss:jboss /opt/jboss/wildfly/standalone/deployments
+
+# Cambiar de vuelta a usuario jboss
+USER jboss
 
 # Ejecutar el script de configuración durante el build
 RUN /opt/jboss/setup-wildfly.sh
