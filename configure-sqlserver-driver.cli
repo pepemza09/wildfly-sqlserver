@@ -1,0 +1,20 @@
+# Script CLI para configurar el driver de SQL Server en WildFly
+# Ejecutar con: /opt/jboss/wildfly/bin/jboss-cli.sh --connect --file=configure-sqlserver-driver.cli
+
+# Conectar al servidor
+connect
+
+# Instalar el módulo del driver SQL Server
+/subsystem=datasources/jdbc-driver=sqlserver:add(driver-name="sqlserver",driver-module-name="com.microsoft.sqlserver",driver-class-name="com.microsoft.sqlserver.jdbc.SQLServerDriver")
+
+# Crear datasource
+data-source add --name=SqlServerDS --jndi-name=java:jboss/datasources/SqlServerDS --driver-name=sqlserver --connection-url=jdbc:sqlserver://sqlserver:1433;databaseName=master --user-name=sa --password=YourStrong@Passw0rd --validate-on-match=true --background-validation=false --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.mssql.MSSQLValidConnectionChecker --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.mssql.MSSQLExceptionSorter
+
+# Habilitar el datasource
+data-source enable --name=SqlServerDS
+
+# Recargar configuración
+reload
+
+# Salir
+quit

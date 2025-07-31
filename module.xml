@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Este archivo debe colocarse en: 
+  /opt/jboss/wildfly/modules/system/layers/base/com/microsoft/sqlserver/main/module.xml
+-->
+<module xmlns="urn:jboss:module:1.1" name="com.microsoft.sqlserver">
+    <resources>
+        <resource-root path="mssql-jdbc-12.4.2.jre11.jar"/>
+    </resources>
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+    </dependencies>
+</module>

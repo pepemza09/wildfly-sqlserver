@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Standard
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  wildfly:
+    build:
+      context: .
+      dockerfile: Dockerfile.wildfly
+    container_name: wildfly
+    ports:
+      - "8080:8080"
+      - "9990:9990"  # Puerto para la consola de administración
+    environment:
+      - WILDFLY_ADMIN_USER=admin
+      - WILDFLY_ADMIN_PASSWORD=Admin@123
+    volumes:
+      - wildfly_deployments:/opt/jboss/wildfly/standalone/deployments
+      - wildfly_logs:/opt/jboss/wildfly/standalone/log
+    depends_on:
+      - sqlserver
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+  wildfly_deployments:
+  wildfly_logs:
+
+networks:
+  app-network:
+    driver: bridge

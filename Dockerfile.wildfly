@@ -1,0 +1,27 @@
+FROM jboss/wildfly:latest
+
+# Variables de entorno para el usuario administrador
+ENV WILDFLY_ADMIN_USER=admin
+ENV WILDFLY_ADMIN_PASSWORD=Admin@123
+
+# Cambiar a usuario root para instalar dependencias
+USER root
+
+# Instalar herramientas adicionales si es necesario
+RUN yum update -y && yum clean all
+
+# Volver al usuario jboss
+USER jboss
+
+# Copiar el script de configuración
+COPY setup-wildfly.sh /opt/jboss/
+RUN chmod +x /opt/jboss/setup-wildfly.sh
+
+# Ejecutar el script de configuración durante el build
+RUN /opt/jboss/setup-wildfly.sh
+
+# Exponer puertos
+EXPOSE 8080 9990
+
+# Comando para iniciar WildFly con acceso remoto a la consola de administración
+CMD ["/opt/jboss/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
