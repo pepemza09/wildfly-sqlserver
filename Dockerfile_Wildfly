@@ -1,0 +1,32 @@
+# Usa la imagen base de OpenJDK para Java 11
+FROM openjdk:11-jdk-slim
+
+# Establece el directorio de trabajo
+WORKDIR /opt/jboss
+
+# Instala curl y unzip para poder descargar y descomprimir WildFly
+RUN apt-get update && apt-get install -y curl unzip && rm -rf /var/lib/apt/lists/*
+
+# Variables de entorno para WildFly
+ENV WILDFLY_VERSION=26.1.3.Final
+ENV JBOSS_HOME=/opt/jboss/wildfly
+
+# Descarga y descomprime WildFly
+# Se usa un enlace de descarga alternativo y fiable
+RUN curl -fSL https://github.com/wildfly/wildfly/releases/download/26.1.3.Final/wildfly-26.1.3.Final.zip -o /tmp/wildfly.zip \
+    && unzip -q /tmp/wildfly.zip -d /opt/jboss \
+    && mv /opt/jboss/wildfly-$WILDFLY_VERSION $JBOSS_HOME \
+    && rm /tmp/wildfly.zip
+
+# Crea el usuario administrador de WildFly
+ARG WILDFLY_ADMIN_USER=admin
+ARG WILDFLY_ADMIN_PASSWORD=password123
+
+RUN $JBOSS_HOME/bin/add-user.sh -a --user $WILDFLY_ADMIN_USER --password $WILDFLY_ADMIN_PASSWORD -s
+
+# Exponer los puertos de WildFly
+EXPOSE 8080
+EXPOSE 9990
+
+# Punto de entrada para iniciar WildFly
+CMD ["/opt/jboss/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
